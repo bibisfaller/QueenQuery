@@ -18,6 +18,7 @@ Facilitar a organização e consulta de anotações técnicas de estudantes, est
 - Organização por categoria
 - Registro automático da data
 - Interface responsiva
+- Pesquisa de registros por palavras-chave, considerando título, categoria, descrição técnica e solução ou procedimento.
 
 ## Como executar
 1. Baixe os arquivos index.html e style.css na mesma pasta.
