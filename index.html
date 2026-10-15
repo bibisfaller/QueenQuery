@@ -9,84 +9,94 @@
 </head>
 <body>
 
-<div id="app">
-    <h1>QueenQuery</h1>
-    <p>Registro e recuperação de conhecimento técnico</p>
+<main id="app">
+    <header>
+        <h1>QueenQuery</h1>
+        <p>Registro e recuperação de conhecimento técnico</p>
+    </header>
 
-    <h2>{{ editando === null ? 'Novo registro' : 'Editar registro' }}</h2>
+    <section aria-labelledby="titulo-formulario">
+        <h2 id="titulo-formulario">
+            {{ editando === null ? 'Novo registro' : 'Editar registro' }}
+        </h2>
 
-    <form @submit.prevent="salvarRegistro">
-        <label for="titulo">Título:</label>
-        <input id="titulo" v-model="titulo" required>
+        <form @submit.prevent="salvarRegistro">
+            <label for="titulo">Título:</label>
+            <input id="titulo" type="text" v-model="titulo" required>
 
-        <label for="categoria">Categoria:</label>
-        <input id="categoria" v-model="categoria" required>
+            <label for="categoria">Categoria:</label>
+            <input id="categoria" type="text" v-model="categoria" required>
 
-        <label for="descricao">Descrição técnica:</label>
-        <textarea id="descricao" v-model="descricao" required></textarea>
+            <label for="descricao">Descrição técnica:</label>
+            <textarea id="descricao" v-model="descricao" required></textarea>
 
-        <label for="solucao">Solução ou procedimento:</label>
-        <textarea id="solucao" v-model="solucao"></textarea>
+            <label for="solucao">Solução ou procedimento:</label>
+            <textarea id="solucao" v-model="solucao"></textarea>
 
-        <button type="submit">
-            {{ editando === null ? 'Salvar registro' : 'Atualizar registro' }}
-        </button>
-
-        <button
-            v-if="editando !== null"
-            type="button"
-            @click="limparFormulario"
-        >
-            Cancelar edição
-        </button>
-    </form>
-
-    <h2>Registros cadastrados</h2>
-
-    <label for="busca">Pesquisar registros:</label>
-    <input
-        id="busca"
-        type="text"
-        v-model="busca"
-        placeholder="Digite um título, categoria ou palavra-chave..."
-    >
-
-    <div id="registros">
-        <p v-if="registros.length === 0">
-            Nenhum registro cadastrado.
-        </p>
-
-        <p v-else-if="registrosFiltrados.length === 0">
-            Nenhum registro encontrado para esta pesquisa.
-        </p>
-
-        <div
-            v-for="registro in registrosFiltrados"
-            :key="registro.id"
-            class="registro"
-        >
-            <h3>{{ registro.titulo }}</h3>
-            <p><strong>Categoria:</strong> {{ registro.categoria }}</p>
-            <p><strong>Descrição:</strong> {{ registro.descricao }}</p>
-            <p><strong>Solução:</strong> {{ registro.solucao }}</p>
-            <p><strong>Data:</strong> {{ registro.data }}</p>
-
-            <button
-                type="button"
-                @click="editarRegistro(registro.id)"
-            >
-                Editar
+            <button type="submit">
+                {{ editando === null ? 'Salvar registro' : 'Atualizar registro' }}
             </button>
 
             <button
+                v-if="editando !== null"
                 type="button"
-                @click="excluirRegistro(registro.id)"
+                @click="limparFormulario"
             >
-                Excluir
+                Cancelar edição
             </button>
+        </form>
+    </section>
+
+    <section aria-labelledby="titulo-registros">
+        <h2 id="titulo-registros">Registros cadastrados</h2>
+
+        <label for="busca">Pesquisar registros:</label>
+        <input
+            id="busca"
+            type="search"
+            v-model="busca"
+            placeholder="Digite um título, categoria ou palavra-chave..."
+        >
+
+        <div id="registros" aria-live="polite">
+            <p v-if="registros.length === 0">
+                Nenhum registro cadastrado.
+            </p>
+
+            <p v-else-if="registrosFiltrados.length === 0">
+                Nenhum registro encontrado para esta pesquisa.
+            </p>
+
+            <article
+                v-for="registro in registrosFiltrados"
+                :key="registro.id"
+                class="registro"
+            >
+                <h3>{{ registro.titulo }}</h3>
+                <p><strong>Categoria:</strong> {{ registro.categoria }}</p>
+                <p><strong>Descrição:</strong> {{ registro.descricao }}</p>
+                <p><strong>Solução:</strong> {{ registro.solucao }}</p>
+                <p><strong>Data:</strong> {{ registro.data }}</p>
+
+                <button
+                    type="button"
+                    @click="editarRegistro(registro.id)"
+                    :aria-label="'Editar registro: ' + registro.titulo"
+                >
+                    Editar
+                </button>
+
+                <button
+                    type="button"
+                    @click="excluirRegistro(registro.id)"
+                    :aria-label="'Excluir registro: ' + registro.titulo"
+                >
+                    Excluir
+                </button>
+            </article>
         </div>
-    </div>
-</div>
+    </section>
+</main>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
