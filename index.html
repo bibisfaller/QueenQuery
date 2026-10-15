@@ -31,27 +31,59 @@
         <button type="submit">
             {{ editando === null ? 'Salvar registro' : 'Atualizar registro' }}
         </button>
-        <button v-if="editando !== null" type="button" @click="limparFormulario">
+
+        <button
+            v-if="editando !== null"
+            type="button"
+            @click="limparFormulario"
+        >
             Cancelar edição
         </button>
     </form>
 
     <h2>Registros cadastrados</h2>
 
+    <label for="busca">Pesquisar registros:</label>
+    <input
+        id="busca"
+        type="text"
+        v-model="busca"
+        placeholder="Digite um título, categoria ou palavra-chave..."
+    >
+
     <div id="registros">
         <p v-if="registros.length === 0">
             Nenhum registro cadastrado.
         </p>
 
-        <div v-for="(registro, indice) in registros" :key="registro.id" class="registro">
+        <p v-else-if="registrosFiltrados.length === 0">
+            Nenhum registro encontrado para esta pesquisa.
+        </p>
+
+        <div
+            v-for="registro in registrosFiltrados"
+            :key="registro.id"
+            class="registro"
+        >
             <h3>{{ registro.titulo }}</h3>
             <p><strong>Categoria:</strong> {{ registro.categoria }}</p>
             <p><strong>Descrição:</strong> {{ registro.descricao }}</p>
             <p><strong>Solução:</strong> {{ registro.solucao }}</p>
             <p><strong>Data:</strong> {{ registro.data }}</p>
 
-            <button type="button" @click="editarRegistro(indice)">Editar</button>
-            <button type="button" @click="excluirRegistro(indice)">Excluir</button>
+            <button
+                type="button"
+                @click="editarRegistro(registro.id)"
+            >
+                Editar
+            </button>
+
+            <button
+                type="button"
+                @click="excluirRegistro(registro.id)"
+            >
+                Excluir
+            </button>
         </div>
     </div>
 </div>
@@ -68,10 +100,31 @@ createApp({
             categoria: '',
             descricao: '',
             solucao: '',
+            busca: '',
             registros: [],
             editando: null
         };
     },
+
+    computed: {
+        registrosFiltrados() {
+            const termo = this.busca.trim().toLowerCase();
+
+            if (!termo) {
+                return this.registros;
+            }
+
+            return this.registros.filter(registro => {
+                return (
+                    registro.titulo.toLowerCase().includes(termo) ||
+                    registro.categoria.toLowerCase().includes(termo) ||
+                    registro.descricao.toLowerCase().includes(termo) ||
+                    registro.solucao.toLowerCase().includes(termo)
+                );
+            });
+        }
+    },
+
     methods: {
         salvarRegistro() {
             const registro = {
@@ -86,27 +139,46 @@ createApp({
             if (this.editando === null) {
                 this.registros.push(registro);
             } else {
-                registro.id = this.registros[this.editando].id;
-                registro.data = this.registros[this.editando].data;
-                this.registros[this.editando] = registro;
+                const indice = this.registros.findIndex(
+                    item => item.id === this.editando
+                );
+
+                if (indice !== -1) {
+                    registro.id = this.registros[indice].id;
+                    registro.data = this.registros[indice].data;
+                    this.registros[indice] = registro;
+                }
             }
 
             this.limparFormulario();
         },
 
-        editarRegistro(indice) {
-            const registro = this.registros[indice];
+        editarRegistro(id) {
+            const registro = this.registros.find(
+                item => item.id === id
+            );
+
+            if (!registro) return;
+
             this.titulo = registro.titulo;
             this.categoria = registro.categoria;
             this.descricao = registro.descricao;
             this.solucao = registro.solucao;
-            this.editando = indice;
+            this.editando = id;
+
             window.scrollTo(0, 0);
         },
 
-        excluirRegistro(indice) {
+        excluirRegistro(id) {
             if (confirm('Deseja excluir este registro?')) {
-                this.registros.splice(indice, 1);
+                const indice = this.registros.findIndex(
+                    item => item.id === id
+                );
+
+                if (indice !== -1) {
+                    this.registros.splice(indice, 1);
+                }
+
                 this.limparFormulario();
             }
         },
