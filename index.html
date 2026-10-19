@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueenQuery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main id="app">
+    <header>
+        <h1>QueenQuery</h1>
+        <p>Registro e recuperação de conhecimento técnico</p>
+    </header>
+
+    <section aria-labelledby="titulo-formulario">
+        <h2 id="titulo-formulario">
+            {{ editando === null ? 'Novo registro' : 'Editar registro' }}
+        </h2>
+
+        <form @submit.prevent="salvarRegistro">
+            <label for="titulo">Título:</label>
+            <input id="titulo" type="text" v-model="titulo" required>
+
+            <label for="categoria">Categoria:</label>
+            <input id="categoria" type="text" v-model="categoria" required>
+
+            <label for="descricao">Descrição técnica:</label>
+            <textarea id="descricao" v-model="descricao" required></textarea>
+
+            <label for="solucao">Solução ou procedimento:</label>
+            <textarea id="solucao" v-model="solucao"></textarea>
+
+            <button type="submit">
+                {{ editando === null ? 'Salvar registro' : 'Atualizar registro' }}
+            </button>
+
+            <button
+                v-if="editando !== null"
+                type="button"
+                @click="limparFormulario"
+            >
+                Cancelar edição
+            </button>
+        </form>
+    </section>
+
+    <section aria-labelledby="titulo-registros">
+        <h2 id="titulo-registros">Registros cadastrados</h2>
+
+        <label for="busca">Pesquisar registros:</label>
+        <input
+            id="busca"
+            type="search"
+            v-model="busca"
+            placeholder="Digite um título, categoria ou palavra-chave..."
+        >
+
+        <div id="registros" aria-live="polite">
+            <p v-if="registros.length === 0">
+                Nenhum registro cadastrado.
+            </p>
+
+            <p v-else-if="registrosFiltrados.length === 0">
+                Nenhum registro encontrado para esta pesquisa.
+            </p>
+
+            <article
+                v-for="registro in registrosFiltrados"
+                :key="registro.id"
+                class="registro"
+            >
+                <h3>{{ registro.titulo }}</h3>
+                <p><strong>Categoria:</strong> {{ registro.categoria }}</p>
+                <p><strong>Descrição:</strong> {{ registro.descricao }}</p>
+                <p><strong>Solução:</strong> {{ registro.solucao }}</p>
+                <p><strong>Data:</strong> {{ registro.data }}</p>
+
+                <button
+                    type="button"
+                    @click="editarRegistro(registro.id)"
+                    :aria-label="'Editar registro: ' + registro.titulo"
+                >
+                    Editar
+                </button>
+
+                <button
+                    type="button"
+                    @click="excluirRegistro(registro.id)"
+                    :aria-label="'Excluir registro: ' + registro.titulo"
+                >
+                    Excluir
+                </button>
+            </article>
+        </div>
+    </section>
+</main>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            titulo: '',
+            categoria: '',
+            descricao: '',
+            solucao: '',
+            busca: '',
+            registros: [],
+            editando: null
+        };
+    },
+
+    computed: {
+        registrosFiltrados() {
+            const termo = this.busca.trim().toLowerCase();
+
+            if (!termo) {
+                return this.registros;
+            }
+
+            return this.registros.filter(registro => {
+                return (
+                    registro.titulo.toLowerCase().includes(termo) ||
+                    registro.categoria.toLowerCase().includes(termo) ||
+                    registro.descricao.toLowerCase().includes(termo) ||
+                    registro.solucao.toLowerCase().includes(termo)
+                );
+            });
+        }
+    },
+
+    methods: {
+        salvarRegistro() {
+            const registro = {
+                id: Date.now(),
+                titulo: this.titulo,
+                categoria: this.categoria,
+                descricao: this.descricao,
+                solucao: this.solucao,
+                data: new Date().toLocaleDateString('pt-BR')
+            };
+
+            if (this.editando === null) {
+                this.registros.push(registro);
+            } else {
+                const indice = this.registros.findIndex(
+                    item => item.id === this.editando
+                );
+
+                if (indice !== -1) {
+                    registro.id = this.registros[indice].id;
+                    registro.data = this.registros[indice].data;
+                    this.registros[indice] = registro;
+                }
+            }
+
+            this.limparFormulario();
+        },
+
+        editarRegistro(id) {
+            const registro = this.registros.find(
+                item => item.id === id
+            );
+
+            if (!registro) return;
+
+            this.titulo = registro.titulo;
+            this.categoria = registro.categoria;
+            this.descricao = registro.descricao;
+            this.solucao = registro.solucao;
+            this.editando = id;
+
+            window.scrollTo(0, 0);
+        },
+
+        excluirRegistro(id) {
+            if (confirm('Deseja excluir este registro?')) {
+                const indice = this.registros.findIndex(
+                    item => item.id === id
+                );
+
+                if (indice !== -1) {
+                    this.registros.splice(indice, 1);
+                }
+
+                this.limparFormulario();
+            }
+        },
+
+        limparFormulario() {
+            this.titulo = '';
+            this.categoria = '';
+            this.descricao = '';
+            this.solucao = '';
+            this.editando = null;
+        }
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>
